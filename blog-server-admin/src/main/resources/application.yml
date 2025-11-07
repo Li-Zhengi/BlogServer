@@ -1,0 +1,11 @@
+spring:
+  application:
+    name: server-admin
+  profiles:
+    active: dev
+
+  # 引入本地配置
+  config:
+    import:
+      - optional:classpath:application-local.yml
+      - nacos:server-admin-dev.yml?namespace=dev&group=DEFAULT_GROUP&refresh=true

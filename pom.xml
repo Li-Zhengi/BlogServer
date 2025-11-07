@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+    <parent>
+        <groupId>org.springframework.boot</groupId>
+        <artifactId>spring-boot-starter-parent</artifactId>
+        <version>3.5.4</version> <!-- 3.5.x 是快照，不建议 -->
+        <relativePath/> <!-- lookup from repository -->
+    </parent>
+
+
+    <groupId>com.lizhengi</groupId>
+    <artifactId>BlogServer</artifactId>
+    <version>1.0.4</version>
+    <packaging>pom</packaging>
+
+    <name>BlogServer</name>
+    <description>lizhengi blog backend</description>
+
+    <modules>
+        <module>blog-common</module>
+        <module>blog-framework</module>
+        <module>blog-api</module>
+        <module>blog-module-system</module>
+        <module>blog-module-blog</module>
+        <module>blog-module-file</module>
+        <module>blog-server-admin</module>
+        <module>blog-server-client</module>
+    </modules>
+
+    <properties>
+        <maven.compiler.source>21</maven.compiler.source>
+        <maven.compiler.target>21</maven.compiler.target>
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+        <!--    项目版本    -->
+        <project.version>1.0.0</project.version>
+        <!--    依赖版本    -->
+        <mybatis-plus.version>3.5.14</mybatis-plus.version>
+        <mysql-connector.version>8.0.33</mysql-connector.version>
+        <fastjson2.version>2.0.60</fastjson2.version>
+        <nacos.version>2025.0.0.0</nacos.version>
+        <!--    插件版本    -->
+        <versions-maven-plugin.version>2.17.1</versions-maven-plugin.version>
+    </properties>
+
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>org.codehaus.mojo</groupId>
+                <artifactId>versions-maven-plugin</artifactId>
+                <version>${versions-maven-plugin.version}</version>
+            </plugin>
+        </plugins>
+    </build>
+
+</project>
