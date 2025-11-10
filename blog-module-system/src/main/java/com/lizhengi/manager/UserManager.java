@@ -1,6 +1,5 @@
 package com.lizhengi.manager;
 
-
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.lizhengi.mapper.UserMapper;
 import com.lizhengi.pojo.entity.UserEntity;
