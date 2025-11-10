@@ -1,18 +1,15 @@
-package com.lizhengi.mapper;
+package com.lizhengi.blog.mapper;
 
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
-import com.lizhengi.pojo.entity.UserEntity;
+import com.lizhengi.blog.pojo.entity.BlogColumnEntity;
 import org.apache.ibatis.annotations.Mapper;
 import org.springframework.stereotype.Repository;
 
-
 /**
  * @author lizhengi
- * @date 2025/11/7 11:09
+ * @date 2025/11/10 10:06
  */
 @Repository
 @Mapper
-public interface UserMapper extends BaseMapper<UserEntity> {
-
-
+public interface BlogColumnMapper extends BaseMapper<BlogColumnEntity> {
 }

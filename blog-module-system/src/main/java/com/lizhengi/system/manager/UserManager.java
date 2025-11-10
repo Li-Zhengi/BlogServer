@@ -1,8 +1,8 @@
-package com.lizhengi.manager;
+package com.lizhengi.system.manager;
 
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
-import com.lizhengi.mapper.UserMapper;
-import com.lizhengi.pojo.entity.UserEntity;
+import com.lizhengi.system.mapper.UserMapper;
+import com.lizhengi.system.pojo.entity.UserEntity;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 

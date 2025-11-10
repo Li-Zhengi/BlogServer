@@ -1,7 +1,7 @@
-package com.lizhengi.pojo.entity;
-
+package com.lizhengi.system.pojo.entity;
 
 import com.baomidou.mybatisplus.annotation.TableName;
+import com.lizhengi.entity.BaseEntity;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 

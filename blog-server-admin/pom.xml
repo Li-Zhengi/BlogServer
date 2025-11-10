@@ -29,10 +29,9 @@
             <version>1.0.4</version>
         </dependency>
         <dependency>
-            <groupId>org.mybatis</groupId>
-            <artifactId>mybatis-spring</artifactId>
-            <version>3.0.5</version>
-            <scope>compile</scope>
+            <groupId>com.lizhengi</groupId>
+            <artifactId>blog-module-blog</artifactId>
+            <version>1.0.4</version>
         </dependency>
     </dependencies>
 </project>

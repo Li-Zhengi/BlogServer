@@ -1,4 +1,4 @@
-package com.lizhengi.pojo.entity;
+package com.lizhengi.entity;
 
 
 import com.baomidou.mybatisplus.annotation.FieldFill;
