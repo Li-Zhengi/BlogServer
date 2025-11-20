@@ -1,9 +1,10 @@
 package com.lizhengi.blog.manager;
 
-import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+
 import com.lizhengi.blog.mapper.BlogArticleMapper;
 import com.lizhengi.blog.pojo.entity.BlogArticleEntity;
-import lombok.RequiredArgsConstructor;
+import com.lizhengi.manager.BaseCacheIdManager;
+import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Component;
 
 /**
@@ -11,6 +12,31 @@ import org.springframework.stereotype.Component;
  * @date 2025/11/10 10:09
  */
 @Component
-@RequiredArgsConstructor
-public class BlogArticleManager extends ServiceImpl<BlogArticleMapper, BlogArticleEntity> {
+public class BlogArticleManager extends BaseCacheIdManager<BlogArticleMapper, BlogArticleEntity> {
+
+    private static final String CACHE_KEY_PREFIX = "BlogServer:Blog:Article:";
+
+    public BlogArticleManager(StringRedisTemplate stringRedisTemplate) {
+        super(stringRedisTemplate);
+    }
+
+    @Override
+    protected String getCacheKeyPrefix() {
+        return CACHE_KEY_PREFIX;
+    }
+
+    @Override
+    protected String getId(BlogArticleEntity entity) {
+        return entity.getId();
+    }
+
+    @Override
+    protected void setId(BlogArticleEntity entity, String id) {
+        entity.setId(id);
+    }
+
+    @Override
+    protected BlogArticleEntity buildEntityFromCache(String cacheValue) {
+        return new BlogArticleEntity(cacheValue);
+    }
 }

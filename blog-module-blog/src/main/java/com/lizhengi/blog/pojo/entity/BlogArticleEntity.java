@@ -1,9 +1,12 @@
 package com.lizhengi.blog.pojo.entity;
 
+import com.alibaba.fastjson2.JSON;
 import com.baomidou.mybatisplus.annotation.TableName;
+import com.lizhengi.blog.pojo.bo.BlogArticleBO;
 import com.lizhengi.entity.BaseEntity;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
+import org.springframework.beans.BeanUtils;
 
 import java.util.Date;
 
@@ -17,6 +20,25 @@ import java.util.Date;
 @Data
 @TableName("blog_article")
 public class BlogArticleEntity extends BaseEntity<BlogArticleEntity> {
+
+    /**
+     * JSON 构造方法
+     * 通过 JSON 字符串直接创建 ActivityEntity 实例
+     *
+     * @param jsonString JSON 字符串
+     */
+    public BlogArticleEntity(String jsonString) {
+        BeanUtils.copyProperties(JSON.parseObject(jsonString, BlogArticleEntity.class), this);
+    }
+
+    public BlogArticleEntity(BlogArticleBO bo) {
+        BeanUtils.copyProperties(bo, this);
+    }
+
+    @Override
+    public String toString(){
+        return JSON.toJSONString(this);
+    }
 
     /**
      * 文章名称
