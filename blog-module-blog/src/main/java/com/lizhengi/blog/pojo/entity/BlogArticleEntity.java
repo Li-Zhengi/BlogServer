@@ -6,6 +6,7 @@ import com.lizhengi.blog.pojo.bo.BlogArticleBO;
 import com.lizhengi.entity.BaseEntity;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
+import lombok.NoArgsConstructor;
 import org.springframework.beans.BeanUtils;
 
 import java.util.Date;
@@ -19,6 +20,7 @@ import java.util.Date;
 @EqualsAndHashCode(callSuper = true)
 @Data
 @TableName("blog_article")
+@NoArgsConstructor
 public class BlogArticleEntity extends BaseEntity<BlogArticleEntity> {
 
     /**

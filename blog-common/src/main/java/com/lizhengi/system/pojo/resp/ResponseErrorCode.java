@@ -10,7 +10,7 @@ import lombok.Getter;
 @Getter
 public enum ResponseErrorCode {
 
-    SUCCESS("1", "成功"),
+    SUCCESS("ok", "成功"),
     INTERNAL_SERVER_ERROR("-1", "系统繁忙，请稍后再试"),
     UNDEFINED_ERROR("-1", "未定义的系统异常"),
     VALIDATION_ERROR("-1", "参数有误，请检查参数");;

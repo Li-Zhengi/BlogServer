@@ -6,6 +6,7 @@ import com.lizhengi.blog.pojo.bo.BlogColumnBO;
 import com.lizhengi.entity.BaseEntity;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
+import lombok.NoArgsConstructor;
 import org.springframework.beans.BeanUtils;
 
 /**
@@ -17,6 +18,7 @@ import org.springframework.beans.BeanUtils;
 @EqualsAndHashCode(callSuper = true)
 @Data
 @TableName("blog_column")
+@NoArgsConstructor
 public class BlogColumnEntity extends BaseEntity<BlogColumnEntity> {
 
     /**

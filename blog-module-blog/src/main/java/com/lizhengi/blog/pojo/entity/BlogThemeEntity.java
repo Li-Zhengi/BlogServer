@@ -6,6 +6,7 @@ import com.lizhengi.blog.pojo.bo.BlogThemeBO;
 import com.lizhengi.entity.BaseEntity;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
+import lombok.NoArgsConstructor;
 import org.springframework.beans.BeanUtils;
 
 /**
@@ -17,6 +18,7 @@ import org.springframework.beans.BeanUtils;
 @EqualsAndHashCode(callSuper = true)
 @Data
 @TableName("blog_theme")
+@NoArgsConstructor
 public class BlogThemeEntity extends BaseEntity<BlogThemeEntity> {
 
     /**

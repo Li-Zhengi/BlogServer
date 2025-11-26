@@ -6,6 +6,7 @@ import com.lizhengi.entity.BaseEntity;
 import com.lizhengi.system.pojo.bo.UserBO;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
+import lombok.NoArgsConstructor;
 import org.springframework.beans.BeanUtils;
 
 /**
@@ -15,6 +16,7 @@ import org.springframework.beans.BeanUtils;
 @EqualsAndHashCode(callSuper = true)
 @Data
 @TableName("system_user")
+@NoArgsConstructor
 public class UserEntity extends BaseEntity<UserEntity> {
 
     /**

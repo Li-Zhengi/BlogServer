@@ -1,6 +1,7 @@
 package com.lizhengi.system.manager;
 
 
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.lizhengi.manager.BaseCacheIdManager;
 import com.lizhengi.system.mapper.UserMapper;
 import com.lizhengi.system.pojo.entity.UserEntity;
@@ -38,5 +39,18 @@ public class UserManager extends BaseCacheIdManager<UserMapper, UserEntity> {
     @Override
     protected UserEntity buildEntityFromCache(String cacheValue) {
         return new UserEntity(cacheValue);
+    }
+
+    public UserEntity getByUsername(String username) {
+
+        LambdaQueryWrapper<UserEntity> queryWrapper = new LambdaQueryWrapper<>();
+        queryWrapper.eq(UserEntity::getUsername, username);
+
+
+        UserEntity userEntity = this.baseMapper.selectOne(queryWrapper);
+
+        System.out.println(userEntity);
+        // 可以先从缓存查，再查数据库
+        return userEntity;
     }
 }
