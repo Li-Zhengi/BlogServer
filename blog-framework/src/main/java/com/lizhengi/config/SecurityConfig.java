@@ -21,6 +21,11 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.AuthenticationEntryPoint;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.access.AccessDeniedHandler;
+import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+import org.springframework.web.cors.CorsConfiguration;
+import org.springframework.web.cors.CorsConfigurationSource;
+import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
+import org.springframework.web.filter.OncePerRequestFilter;
 
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
@@ -72,6 +77,27 @@ public class SecurityConfig {
      * 例如普通用户访问管理员接口。
      */
     private final AccessDeniedHandler accessDeniedHandler;
+
+    private final OncePerRequestFilter jwtAuthenticationFilter;
+
+
+    @Bean
+    public CorsConfigurationSource corsConfigurationSource() {
+        CorsConfiguration config = new CorsConfiguration();
+        // 前端地址
+        config.addAllowedOrigin("http://localhost:5173");
+        // 允许携带 cookie
+        config.setAllowCredentials(true);
+        // 允许所有请求头
+        config.addAllowedHeader("*");
+        // 允许所有方法 GET, POST, OPTIONS...
+        config.addAllowedMethod("*");
+
+        UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
+        source.registerCorsConfiguration("/**", config);
+        return source;
+    }
+
 
     // ========================
     //   密码加密器
@@ -133,6 +159,8 @@ public class SecurityConfig {
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
 
         http
+
+                .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class)
                 // 禁用 CSRF
                 .csrf(AbstractHttpConfigurer::disable)
 
@@ -152,10 +180,12 @@ public class SecurityConfig {
 
                 // 接口权限
                 .authorizeHttpRequests(auth -> auth
+                        // 登陆接口放行
+                        .requestMatchers("/auth/login").permitAll()
                         // 注册接口放行
-                        .requestMatchers("/auth/admin/register").permitAll()
+                        .requestMatchers("/auth/register").permitAll()
                         // 验证码接口放行
-                        .requestMatchers("/auth/admin/captcha").permitAll()
+                        .requestMatchers("/auth/captcha").permitAll()
                         // 其他接口必须登录
                         .anyRequest().authenticated()
                 )
@@ -193,6 +223,7 @@ public class SecurityConfig {
                                      Authentication authentication) throws IOException {
         response.setContentType("application/json;charset=UTF-8");
         String username = authentication.getName();
+        // 生成 Token、存放 Token 信息
         String token = JWT.create()
                 .setPayload("username", username)
                 .setExpiresAt(new Date(System.currentTimeMillis() + 3600_000))

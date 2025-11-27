@@ -1,9 +1,10 @@
-package com.lizhengi.system.service;
+package com.lizhengi.system.service.impl;
 
 
 import com.alibaba.fastjson2.JSON;
 import com.lizhengi.system.manager.UserManager;
 import com.lizhengi.system.pojo.entity.UserEntity;
+import com.lizhengi.system.pojo.vo.UserSelectVO;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.core.GrantedAuthority;
@@ -61,4 +62,14 @@ public class UserDetailsServiceImpl implements UserDetailsService {
                 .disabled(false)
                 .build();
     }
+
+    public UserSelectVO selectUserByUsername(String username){
+        // 从数据库或缓存查询用户
+        UserEntity userEntity = userManager.getByUsername(username);
+        if (userEntity == null) {
+            throw new UsernameNotFoundException("用户不存在: " + username);
+        }
+        return new UserSelectVO(userEntity);
+    }
+
 }

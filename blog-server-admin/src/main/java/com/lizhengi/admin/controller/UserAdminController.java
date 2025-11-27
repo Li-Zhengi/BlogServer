@@ -1,6 +1,7 @@
 package com.lizhengi.admin.controller;
 
 
+import cn.hutool.jwt.JWT;
 import com.lizhengi.system.pojo.dto.UserCreateDTO;
 import com.lizhengi.system.pojo.dto.UserDeleteDTO;
 import com.lizhengi.system.pojo.dto.UserListDTO;
@@ -12,8 +13,11 @@ import com.lizhengi.system.pojo.resp.ResponseResult;
 import com.lizhengi.system.pojo.vo.UserListVO;
 import com.lizhengi.system.pojo.vo.UserSelectVO;
 import com.lizhengi.system.service.UserAdminService;
+import com.lizhengi.system.service.impl.UserDetailsServiceImpl;
+import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -32,6 +36,39 @@ import java.util.List;
 public class UserAdminController {
 
     private final UserAdminService userAdminService;
+
+    private final UserDetailsServiceImpl userDetailsService;
+
+    /**
+     * 解析 Token 并返回用户信息
+     */
+    @GetMapping("/user-info")
+    public ResponseResult<?> getUserInfo(HttpServletRequest request) {
+
+        // 1. 从 Header 取 Token
+        String header = request.getHeader("Authorization");
+        if (header == null || !header.startsWith("Bearer ")) {
+            return ResponseResult.buildFailResponse("401", "未携带 Token");
+        }
+
+        String token = header.substring(7);
+
+        try {
+            // 2. 解析 Token
+            JWT jwt = JWT.of(token);
+            String username = jwt.getPayload("username").toString();
+
+            // 3. 查询用户信息（使用你写的 selectUserByUsername）
+            UserSelectVO user = userDetailsService.selectUserByUsername(username);
+
+            // 4. 返回
+            return ResponseResult.buildOkResponse(user);
+
+        } catch (Exception e) {
+            log.error("Token 解析失败", e);
+            return ResponseResult.buildFailResponse("401", "Token 无效或已过期");
+        }
+    }
 
     // ==========================
     //      文章相关接口

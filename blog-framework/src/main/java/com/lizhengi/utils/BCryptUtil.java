@@ -41,7 +41,7 @@ public class BCryptUtil {
 
     // 测试
     public static void main(String[] args) {
-        String raw = "123456";
+        String raw = "Lzh123456!";
         String encoded = encode(raw);
         System.out.println("原始密码: " + raw);
         System.out.println("BCrypt 加密: " + encoded);

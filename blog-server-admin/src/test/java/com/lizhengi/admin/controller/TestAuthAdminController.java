@@ -2,16 +2,19 @@ package com.lizhengi.admin.controller;
 
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.jayway.jsonpath.JsonPath;
 import com.lizhengi.system.pojo.dto.UserSignDTO;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
 
+import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
 
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 @SpringBootTest
@@ -23,6 +26,50 @@ class TestAuthAdminController {
 
     @Autowired
     private ObjectMapper objectMapper;
+
+
+    /**
+     * 登录 + 携带 Token 获取用户信息
+     */
+    @Test
+    void testLoginAndGetUserInfo() throws Exception {
+
+        // ==========================
+        // 1. 调用登录接口（formLogin 是 x-www-form-urlencoded）
+        // ==========================
+        MvcResult loginResult = mockMvc.perform(post("/auth/login")
+                        .contentType(MediaType.APPLICATION_FORM_URLENCODED)
+                        .param("username", "admin")
+                        .param("password", "123456"))
+                .andExpect(status().isOk())
+                .andReturn();
+
+        String loginResponse = loginResult.getResponse().getContentAsString();
+        System.out.println("登录响应: " + loginResponse);
+
+        // ==========================
+        // 2. 提取 Token
+        // ==========================
+        // {"code":0,"token":"xxxx"}
+        String token = JsonPath.read(loginResponse, "$.token");
+        System.out.println("提取到 Token: " + token);
+
+        // ==========================
+        // 3. 携带 Token 请求 user-info
+        // ==========================
+        MvcResult userInfoResult = mockMvc.perform(
+                        get("/user/admin/user-info")
+                                .header("Authorization", "Bearer " + token)
+                )
+                .andExpect(status().isOk())
+                .andReturn();
+
+        String userInfoJson = userInfoResult.getResponse().getContentAsString();
+        System.out.println("用户信息响应: " + userInfoJson);
+    }
+
+
+
 
     /**
      * 登录成功
