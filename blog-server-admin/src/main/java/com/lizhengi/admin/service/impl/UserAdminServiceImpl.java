@@ -88,7 +88,7 @@ public class UserAdminServiceImpl implements UserAdminService {
         for (UserEntity entity : entityPage.getRecords()) {
             vos.add(new UserListVO(entity));
         }
-        voPage.setQueryResults(vos);
+        voPage.setList(vos);
         voPage.setTotal(entityPage.getTotal());
         voPage.setPageSize(dto.getPageSize());
         voPage.setPageNum(dto.getPageNum());

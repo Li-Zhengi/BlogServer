@@ -16,7 +16,7 @@ public class PageInfo<V> {
 
     private int pageSize;
 
-    private List<V> queryResults;
+    private List<V> list;
 
     private long total;
 }

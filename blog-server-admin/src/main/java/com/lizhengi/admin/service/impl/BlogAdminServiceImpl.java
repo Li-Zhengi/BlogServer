@@ -182,7 +182,7 @@ public class BlogAdminServiceImpl implements BlogAdminService {
         for (BlogColumnEntity entity : entityPage.getRecords()) {
             vos.add(new BlogColumnListVO(entity));
         }
-        voPage.setQueryResults(vos);
+        voPage.setList(vos);
         voPage.setTotal(entityPage.getTotal());
         voPage.setPageSize(dto.getPageSize());
         voPage.setPageNum(dto.getPageNum());
@@ -249,7 +249,7 @@ public class BlogAdminServiceImpl implements BlogAdminService {
         for (BlogArticleEntity entity : entityPage.getRecords()) {
             vos.add(new BlogArticleListVO(entity));
         }
-        voPage.setQueryResults(vos);
+        voPage.setList(vos);
         voPage.setTotal(entityPage.getTotal());
         voPage.setPageSize(dto.getPageSize());
         voPage.setPageNum(dto.getPageNum());

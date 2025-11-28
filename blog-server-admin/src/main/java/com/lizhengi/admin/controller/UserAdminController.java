@@ -74,35 +74,35 @@ public class UserAdminController {
     //      文章相关接口
     // ==========================
 
-    @PostMapping("/User/create")
+    @PostMapping("/user/create")
     public ResponseResult<?> createUser(@RequestBody UserCreateDTO dto) {
         userAdminService.createUser(dto);
         return ResponseResult.buildOkResponse();
     }
 
-    @PostMapping("/User/delete")
+    @PostMapping("/user/delete")
     public ResponseResult<?> deleteUser(@RequestBody UserDeleteDTO dto) {
         userAdminService.deleteUser(dto);
         return ResponseResult.buildOkResponse();
     }
 
-    @PostMapping("/User/update")
+    @PostMapping("/user/update")
     public ResponseResult<?> updateUser(@RequestBody UserUpdateDTO dto) {
         userAdminService.updateUser(dto);
         return ResponseResult.buildOkResponse();
     }
 
-    @PostMapping("/User/select")
+    @PostMapping("/user/select")
     public ResponseResult<UserSelectVO> selectUser(@RequestBody UserSelectDTO dto) {
         return ResponseResult.buildOkResponse(userAdminService.selectUser(dto));
     }
 
-    @PostMapping("/User/list")
+    @PostMapping("/user-list")
     public ResponseResult<List<UserListVO>> listUser(@RequestBody UserListDTO dto) {
         return ResponseResult.buildOkResponse(userAdminService.listUser(dto));
     }
 
-    @PostMapping("/User/page")
+    @PostMapping("/user-page")
     public ResponseResult<PageInfo<UserListVO>> pageUser(@RequestBody UserPageDTO dto) {
         return ResponseResult.buildOkResponse(userAdminService.pageUser(dto));
     }
