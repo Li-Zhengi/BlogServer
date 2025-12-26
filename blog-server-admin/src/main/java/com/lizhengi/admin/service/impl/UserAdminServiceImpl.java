@@ -4,7 +4,7 @@ package com.lizhengi.admin.service.impl;
 import cn.hutool.core.util.StrUtil;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
-import com.lizhengi.system.manager.UserManager;
+import com.lizhengi.system.manager.OldUserManager;
 import com.lizhengi.system.pojo.dto.UserCreateDTO;
 import com.lizhengi.system.pojo.dto.UserDeleteDTO;
 import com.lizhengi.system.pojo.dto.UserListDTO;
@@ -30,7 +30,7 @@ import java.util.List;
 @RequiredArgsConstructor
 public class UserAdminServiceImpl implements UserAdminService {
 
-    private final UserManager userManager;
+    private final OldUserManager userManager;
 
     @Override
     public void createUser(UserCreateDTO dto) {

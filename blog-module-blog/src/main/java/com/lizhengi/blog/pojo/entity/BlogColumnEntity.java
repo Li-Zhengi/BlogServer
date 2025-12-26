@@ -3,7 +3,7 @@ package com.lizhengi.blog.pojo.entity;
 import com.alibaba.fastjson2.JSON;
 import com.baomidou.mybatisplus.annotation.TableName;
 import com.lizhengi.blog.pojo.bo.BlogColumnBO;
-import com.lizhengi.entity.BaseEntity;
+import com.lizhengi.framework.entity.BaseEntity;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;

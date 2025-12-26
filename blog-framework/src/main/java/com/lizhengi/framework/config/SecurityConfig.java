@@ -1,7 +1,7 @@
-package com.lizhengi.config;
+package com.lizhengi.framework.config;
 
 import cn.hutool.jwt.JWT;
-import com.lizhengi.common.SystemConstant;
+import com.lizhengi.framework.common.constant.SystemConstant;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
@@ -58,39 +58,31 @@ import java.util.Date;
 @RequiredArgsConstructor
 public class SecurityConfig {
 
-    // ========================
-    //   注入自定义组件
-    // ========================
+    // ========== 1. 基础组件（系统启动时加载）==========
 
     /**
-     * 未认证（401）异常处理
-     * <p>
-     * 用户访问需要登录的接口但未认证时触发，
-     * 例如 JWT 缺失、过期，无身份信息等情况。
+     * 密码加密器（用于存储密码 & 登录校验），参数：无
      */
-    private final AuthenticationEntryPoint authenticationEntryPoint;
+    @Bean
+    public PasswordEncoder passwordEncoder() {
+        // BCrypt 自带随机盐
+        return new BCryptPasswordEncoder();
+    }
 
     /**
-     * 权限不足（403）异常处理
-     * <p>
-     * 用户已登录，但访问权限不足时触发，
-     * 例如普通用户访问管理员接口。
+     * CORS 跨域配置源（允许 Vue 前端访问后端接口）
+     * 参数说明：无
+     * 配置内容：
+     * - 允许来源：localhost:5173
+     * - 允许 Cookie：true
+     * - 允许 Header/Method：*
      */
-    private final AccessDeniedHandler accessDeniedHandler;
-
-    private final OncePerRequestFilter jwtAuthenticationFilter;
-
-
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration config = new CorsConfiguration();
-        // 前端地址
         config.addAllowedOrigin("http://localhost:5173");
-        // 允许携带 cookie
         config.setAllowCredentials(true);
-        // 允许所有请求头
         config.addAllowedHeader("*");
-        // 允许所有方法 GET, POST, OPTIONS...
         config.addAllowedMethod("*");
 
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
@@ -98,149 +90,121 @@ public class SecurityConfig {
         return source;
     }
 
-
-    // ========================
-    //   密码加密器
-    // ========================
-
     /**
-     * 密码加密器：
-     * <p>
-     * 使用 BCrypt 算法进行密码加密，内部带随机盐值。
-     * Spring Security 在认证时会自动进行匹配：
-     * rawPassword -> BCrypt -> encodedPassword
+     * 认证管理器（用于登录接口触发用户认证）
+     * 参数：
      *
-     * @return BCryptPasswordEncoder 实例
-     */
-    @Bean
-    public PasswordEncoder passwordEncoder() {
-        return new BCryptPasswordEncoder();
-    }
-
-    // ========================
-    //   AuthenticationManager
-    // ========================
-
-    /**
-     * AuthenticationManager
-     * <p>
-     * 最新推荐写法：让 Spring 自动组装 AuthenticationManager，
-     * 会自动发现 UserDetailsService + PasswordEncoder 并创建 DaoAuthenticationProvider。
-     *
-     * @param configuration Spring 提供的认证配置
-     * @return AuthenticationManager 实例
-     * @throws Exception 异常
+     * @param configuration 由 Spring 自动提供，内部会装配 UserDetailsService + PasswordEncoder
+     * @return AuthenticationManager 认证执行入口
      */
     @Bean
     public AuthenticationManager authenticationManager(AuthenticationConfiguration configuration) throws Exception {
         return configuration.getAuthenticationManager();
     }
 
-    // ========================
-    //   HttpSecurity 核心安全规则
-    // ========================
+
+    // ========== 2. 注入自定义过滤器 & 异常处理器（构建过滤链时使用）==========
 
     /**
-     * 配置安全过滤链
-     * <p>
-     * 包含：
-     * - CSRF 关闭（前后端分离系统必须关闭）
-     * - CORS 开启（允许跨域请求）
-     * - 会话策略：STATELESS（完全依赖 JWT，无 session）
-     * - 自定义异常处理（401 / 403）
-     * - 接口权限控制
-     * - 表单登录（loginProcessingUrl、成功/失败处理）
+     * JWT 认证失败处理器（未认证时触发 401）
+     */
+    private final AuthenticationEntryPoint authenticationEntryPoint;
+
+    /**
+     * 权限不足处理器（已认证但无权限时触发 403）
+     */
+    private final AccessDeniedHandler accessDeniedHandler;
+
+    /**
+     * JWT 解析过滤器（每个请求执行一次），参数：HttpServletRequest / HttpServletResponse / FilterChain（由 OncePerRequestFilter 内部控制）
+     */
+    private final OncePerRequestFilter jwtAuthenticationFilter;
+
+
+    // ========== 3. 核心安全过滤链（请求进入后端的执行顺序）==========
+
+    /**
+     * Spring Security 过滤链配置
+     * 参数：
      *
-     * @param http HttpSecurity 对象
-     * @return SecurityFilterChain 实例
-     * @throws Exception 异常
+     * @param http HttpSecurity 负责构建所有安全规则
+     * @return SecurityFilterChain 过滤器执行链对象
      */
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
-
         http
-
+                // ① JWT 过滤器最先执行（在账号密码登录过滤器之前解析身份）
                 .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class)
-                // 禁用 CSRF
+
+                // ② 关闭 CSRF（前后端分离必须关闭）
                 .csrf(AbstractHttpConfigurer::disable)
 
-                // 开启 CORS
+                // ③ 启用跨域配置（使用上面定义的 CORS Bean）
                 .cors(Customizer.withDefaults())
 
-                // 会话策略：STATELESS
-                .sessionManagement(session -> session
-                        .sessionCreationPolicy(SessionCreationPolicy.STATELESS)
-                )
+                // ④ 设为无状态，不创建/使用 Session
+                .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
 
-                // 异常处理
+                // ⑤ 统一异常处理入口
                 .exceptionHandling(e -> e
-                        .authenticationEntryPoint(authenticationEntryPoint)
-                        .accessDeniedHandler(accessDeniedHandler)
+                        .authenticationEntryPoint(authenticationEntryPoint) // 401
+                        .accessDeniedHandler(accessDeniedHandler)           // 403
                 )
 
-                // 接口权限
+                // ⑥ 接口权限规则（按路径匹配）
                 .authorizeHttpRequests(auth -> auth
-                        // 登陆接口放行
-                        .requestMatchers("/auth/login").permitAll()
-                        // 注册接口放行
-                        .requestMatchers("/auth/register").permitAll()
-                        // 验证码接口放行
-                        .requestMatchers("/auth/captcha").permitAll()
-                        // 其他接口必须登录
-                        .anyRequest().authenticated()
+                        .requestMatchers("/auth/login").permitAll()    // 登录放行
+                        .requestMatchers("/auth/register").permitAll() // 注册放行
+                        .requestMatchers("/auth/captcha").permitAll()  // 验证码放行
+                        .anyRequest().authenticated()                  // 其他接口必须登录
                 )
 
-                // 表单登录
+                // ⑦ 账号密码登录配置（不使用默认登录页，只接受接口 POST 方式）
                 .formLogin(form -> form
-                        // 登录入口
-                        .loginProcessingUrl("/auth/login")
-                        // 登录成功处理
-                        .successHandler(this::loginSuccessHandler)
-                        // 登录失败处理
-                        .failureHandler(this::loginFailureHandler)
+                        .loginProcessingUrl("/auth/login")      // 处理登录的接口
+                        .successHandler(this::loginSuccessHandler) // 登录成功回调
+                        .failureHandler(this::loginFailureHandler) // 登录失败回调
                         .permitAll()
                 );
 
         return http.build();
     }
 
-    // ========================
-    //   登录处理逻辑
-    // ========================
+
+    // ========== 4. 登录回调处理（在认证流程最后触发）==========
 
     /**
-     * 登录成功处理
-     * <p>
-     * 可在此生成 JWT 并返回给前端
+     * 登录成功回调处理（生成 JWT 并返回）
+     * 参数：
      *
-     * @param request        HttpServletRequest
-     * @param response       HttpServletResponse
-     * @param authentication 认证信息
-     * @throws IOException 异常
+     * @param request        本次 HTTP 请求对象
+     * @param response       HTTP 响应对象（用于写回 JSON）
+     * @param authentication 认证成功后的用户信息（含 username / authorities）
      */
     private void loginSuccessHandler(HttpServletRequest request,
                                      HttpServletResponse response,
                                      Authentication authentication) throws IOException {
         response.setContentType("application/json;charset=UTF-8");
         String username = authentication.getName();
-        // 生成 Token、存放 Token 信息
+
+        // 生成 JWT Token
         String token = JWT.create()
                 .setPayload("username", username)
+                // 1小时过期
                 .setExpiresAt(new Date(System.currentTimeMillis() + 3600_000))
                 .setKey(SystemConstant.JWT_SIGN_KEY.getBytes(StandardCharsets.UTF_8))
                 .sign();
+
         response.getWriter().write("{\"code\":0,\"token\":\"" + token + "\"}");
     }
 
     /**
-     * 登录失败处理
-     * <p>
-     * 用户名或密码错误时返回统一 JSON 格式
+     * 登录失败回调处理（返回统一错误 JSON）
+     * 参数：
      *
-     * @param request   HttpServletRequest
-     * @param response  HttpServletResponse
-     * @param exception AuthenticationException
-     * @throws IOException 异常
+     * @param request   本次 HTTP 请求对象
+     * @param response  HTTP 响应对象（用于写回 JSON）
+     * @param exception 认证失败的异常信息（如密码错误、账号不存在）
      */
     private void loginFailureHandler(HttpServletRequest request,
                                      HttpServletResponse response,
@@ -248,5 +212,4 @@ public class SecurityConfig {
         response.setContentType("application/json;charset=UTF-8");
         response.getWriter().write("{\"code\":401,\"msg\":\"用户名或密码错误\"}");
     }
-
 }

@@ -4,6 +4,8 @@ package com.lizhengi.system.pojo.bo;
 import lombok.Data;
 
 /**
+ * 用户-业务对象
+ *
  * @author lizhengi
  * @date 2025/11/20 10:04
  */
@@ -13,7 +15,7 @@ public class UserBO {
     /**
      * 用户：ID
      */
-    private String id;
+    private Long id;
 
     /**
      * 用户：用户名

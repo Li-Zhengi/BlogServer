@@ -2,55 +2,65 @@ package com.lizhengi.system.manager;
 
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
-import com.lizhengi.manager.BaseCacheIdManager;
+import com.lizhengi.framework.common.codec.SimpleJsonCodec;
+import com.lizhengi.framework.manager.BaseCacheManager;
 import com.lizhengi.system.mapper.UserMapper;
+import com.lizhengi.system.pojo.assembler.UserAssembler;
+import com.lizhengi.system.pojo.bo.UserBO;
+import com.lizhengi.system.pojo.bo.UserCacheBO;
 import com.lizhengi.system.pojo.entity.UserEntity;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Component;
 
+import java.time.Duration;
+
 /**
  * @author lizhengi
- * @date 2025/11/7 11:32
+ * @date 2025/12/26 09:57
  */
 @Component
-public class UserManager extends BaseCacheIdManager<UserMapper, UserEntity> {
+public class UserManager extends BaseCacheManager<UserMapper, UserEntity, UserBO, UserCacheBO, UserAssembler> {
 
-    private static final String CACHE_KEY_PREFIX = "BlogServer:Blog:User:";
-
-    public UserManager(StringRedisTemplate stringRedisTemplate) {
-        super(stringRedisTemplate);
+    /**
+     * 构造函数
+     *
+     * @param redisTemplate Redis 操作模板
+     */
+    protected UserManager(StringRedisTemplate redisTemplate, UserAssembler userAssembler) {
+        super(redisTemplate, new SimpleJsonCodec<>(UserCacheBO.class), userAssembler);
     }
 
     @Override
-    protected String getCacheKeyPrefix() {
-        return CACHE_KEY_PREFIX;
+    protected String cacheName() {
+        return "USER";
     }
 
     @Override
-    protected String getId(UserEntity entity) {
-        return entity.getId();
+    protected Duration cacheTtl() {
+        return Duration.ofHours(1);
     }
 
-    @Override
-    protected void setId(UserEntity entity, String id) {
-        entity.setId(id);
+    /**
+     * 根据用户名查用户信息
+     *
+     * @param username 用户名
+     * @return 当前用户名对应的信息
+     */
+    public UserBO getBoByUsername(String username) {
+        // 1. 只查 id
+        LambdaQueryWrapper<UserEntity> query = new LambdaQueryWrapper<>();
+        query.eq(UserEntity::getUsername, username)
+                .select(UserEntity::getId);
+
+        UserEntity entity = this.baseMapper.selectOne(query);
+        if (entity == null) {
+            return null;
+        }
+
+        Long id = entity.getId();
+
+        // 2. 先走缓存再查 DB（父类已统一处理 assembler 和 codec）
+        return this.getBoById(id);
     }
 
-    @Override
-    protected UserEntity buildEntityFromCache(String cacheValue) {
-        return new UserEntity(cacheValue);
-    }
-
-    public UserEntity getByUsername(String username) {
-
-        LambdaQueryWrapper<UserEntity> queryWrapper = new LambdaQueryWrapper<>();
-        queryWrapper.eq(UserEntity::getUsername, username);
-
-
-        UserEntity userEntity = this.baseMapper.selectOne(queryWrapper);
-
-        System.out.println(userEntity);
-        // 可以先从缓存查，再查数据库
-        return userEntity;
-    }
 }

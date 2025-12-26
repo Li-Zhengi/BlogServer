@@ -2,7 +2,7 @@ package com.lizhengi.system.service.impl;
 
 
 import com.alibaba.fastjson2.JSON;
-import com.lizhengi.system.manager.UserManager;
+import com.lizhengi.system.manager.OldUserManager;
 import com.lizhengi.system.pojo.entity.UserEntity;
 import com.lizhengi.system.pojo.vo.UserSelectVO;
 import lombok.RequiredArgsConstructor;
@@ -26,7 +26,7 @@ import java.util.Collections;
 @Slf4j
 public class UserDetailsServiceImpl implements UserDetailsService {
 
-    private final UserManager userManager;
+    private final OldUserManager userManager;
 
     /**
      * 根据用户名查询用户信息

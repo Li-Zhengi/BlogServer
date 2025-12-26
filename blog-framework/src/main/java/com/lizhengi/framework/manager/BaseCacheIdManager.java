@@ -1,4 +1,4 @@
-package com.lizhengi.manager;
+package com.lizhengi.framework.manager;
 
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;

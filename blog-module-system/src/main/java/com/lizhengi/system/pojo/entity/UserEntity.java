@@ -2,7 +2,7 @@ package com.lizhengi.system.pojo.entity;
 
 import com.alibaba.fastjson2.JSON;
 import com.baomidou.mybatisplus.annotation.TableName;
-import com.lizhengi.entity.BaseEntity;
+import com.lizhengi.framework.entity.BaseEntity;
 import com.lizhengi.system.pojo.bo.UserBO;
 import lombok.Data;
 import lombok.EqualsAndHashCode;

@@ -2,7 +2,7 @@ package com.lizhengi.blog.manager;
 
 import com.lizhengi.blog.mapper.BlogColumnMapper;
 import com.lizhengi.blog.pojo.entity.BlogColumnEntity;
-import com.lizhengi.manager.BaseCacheIdManager;
+import com.lizhengi.framework.manager.BaseCacheIdManager;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Component;
 

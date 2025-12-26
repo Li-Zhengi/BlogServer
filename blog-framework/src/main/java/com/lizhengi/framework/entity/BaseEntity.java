@@ -1,4 +1,4 @@
-package com.lizhengi.entity;
+package com.lizhengi.framework.entity;
 
 
 import com.baomidou.mybatisplus.annotation.FieldFill;
@@ -20,7 +20,7 @@ import java.util.Date;
 public abstract class BaseEntity<T extends Model<T>> extends Model<T> {
 
     @TableId
-    private String id;
+    private Long id;
 
     /**
      * 逻辑删除标志

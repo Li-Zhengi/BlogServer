@@ -1,10 +1,11 @@
-package com.lizhengi.system.config;
+package com.lizhengi.framework.config.security;
 
-import com.lizhengi.system.service.impl.UserDetailsServiceImpl;
+import cn.hutool.jwt.JWT;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -14,8 +15,6 @@ import org.springframework.web.filter.OncePerRequestFilter;
 
 import java.io.IOException;
 
-import cn.hutool.jwt.JWT;
-
 
 /**
  * @author lizhengi
@@ -23,27 +22,29 @@ import cn.hutool.jwt.JWT;
  */
 @Component
 @RequiredArgsConstructor
-public class JwtAuthenticationFilter extends OncePerRequestFilter {
+public class SecurityJwtAuthenticationFilter extends OncePerRequestFilter {
 
-    private final UserDetailsServiceImpl userDetailsService;
+    private final SecurityUserService service;
+
 
     @Override
-    protected void doFilterInternal(HttpServletRequest request,
-                                    HttpServletResponse response,
-                                    FilterChain filterChain) throws ServletException, IOException {
+    protected void doFilterInternal(HttpServletRequest request, @NonNull HttpServletResponse response, @NonNull FilterChain filterChain) throws ServletException, IOException {
 
+        // 从请求头读取 Token
         String header = request.getHeader("Authorization");
 
         if (header != null && header.startsWith("Bearer ")) {
             String token = header.substring(7);
 
             try {
-                // 解析 Token
+                // 解析 Token，获取 JWT
                 JWT jwt = JWT.of(token);
-                String username = jwt.getPayload("username").toString();
+
+                // 取出 payload 中的 id
+                String username = jwt.getPayload("userName").toString();
 
                 // 查询用户
-                UserDetails userDetails = userDetailsService.loadUserByUsername(username);
+                UserDetails userDetails = service.loadUserByUsername(username);
 
                 // 构建认证对象
                 UsernamePasswordAuthenticationToken authToken =

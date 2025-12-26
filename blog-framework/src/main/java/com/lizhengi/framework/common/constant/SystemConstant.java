@@ -1,4 +1,4 @@
-package com.lizhengi.common;
+package com.lizhengi.framework.common.constant;
 
 
 /**

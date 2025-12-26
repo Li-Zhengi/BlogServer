@@ -1,4 +1,4 @@
-package com.lizhengi.config;
+package com.lizhengi.framework.config.security;
 
 
 import jakarta.servlet.http.HttpServletRequest;

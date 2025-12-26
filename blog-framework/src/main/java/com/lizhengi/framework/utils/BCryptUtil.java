@@ -1,4 +1,4 @@
-package com.lizhengi.utils;
+package com.lizhengi.framework.utils;
 
 
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
