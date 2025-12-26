@@ -1,9 +1,8 @@
 package com.lizhengi.framework.config;
 
-import cn.hutool.jwt.JWT;
-import com.lizhengi.framework.common.constant.SystemConstant;
-import jakarta.servlet.http.HttpServletRequest;
-import jakarta.servlet.http.HttpServletResponse;
+import com.lizhengi.framework.config.security.CustomAuthResponseHandler;
+import com.lizhengi.framework.config.security.CustomJwtAuthenticationFilter;
+import com.lizhengi.framework.config.security.CustomSecurityExceptionHandler;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -14,22 +13,13 @@ import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
 import org.springframework.security.config.http.SessionCreationPolicy;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
-import org.springframework.security.web.AuthenticationEntryPoint;
 import org.springframework.security.web.SecurityFilterChain;
-import org.springframework.security.web.access.AccessDeniedHandler;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
-import org.springframework.web.filter.OncePerRequestFilter;
-
-import java.io.IOException;
-import java.nio.charset.StandardCharsets;
-import java.util.Date;
 
 /**
  * Spring Security 核心安全配置类
@@ -58,70 +48,24 @@ import java.util.Date;
 @RequiredArgsConstructor
 public class SecurityConfig {
 
-    // ========== 1. 基础组件（系统启动时加载）==========
+    // ========== 运行期组件（注入但不实现业务）==========
 
     /**
-     * 密码加密器（用于存储密码 & 登录校验），参数：无
+     * 用户登陆处理器
      */
-    @Bean
-    public PasswordEncoder passwordEncoder() {
-        // BCrypt 自带随机盐
-        return new BCryptPasswordEncoder();
-    }
+    private final CustomAuthResponseHandler responseHandler;
 
     /**
-     * CORS 跨域配置源（允许 Vue 前端访问后端接口）
-     * 参数说明：无
-     * 配置内容：
-     * - 允许来源：localhost:5173
-     * - 允许 Cookie：true
-     * - 允许 Header/Method：*
+     * JWT 认证失败处理器（未认证时触发 401, 权限不足时触发 403）
      */
-    @Bean
-    public CorsConfigurationSource corsConfigurationSource() {
-        CorsConfiguration config = new CorsConfiguration();
-        config.addAllowedOrigin("http://localhost:5173");
-        config.setAllowCredentials(true);
-        config.addAllowedHeader("*");
-        config.addAllowedMethod("*");
-
-        UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
-        source.registerCorsConfiguration("/**", config);
-        return source;
-    }
+    private final CustomSecurityExceptionHandler exceptionHandler;
 
     /**
-     * 认证管理器（用于登录接口触发用户认证）
-     * 参数：
-     *
-     * @param configuration 由 Spring 自动提供，内部会装配 UserDetailsService + PasswordEncoder
-     * @return AuthenticationManager 认证执行入口
+     * JWT 解析过滤器（每个请求执行一次）
      */
-    @Bean
-    public AuthenticationManager authenticationManager(AuthenticationConfiguration configuration) throws Exception {
-        return configuration.getAuthenticationManager();
-    }
+    private final CustomJwtAuthenticationFilter authenticationFilter;
 
-
-    // ========== 2. 注入自定义过滤器 & 异常处理器（构建过滤链时使用）==========
-
-    /**
-     * JWT 认证失败处理器（未认证时触发 401）
-     */
-    private final AuthenticationEntryPoint authenticationEntryPoint;
-
-    /**
-     * 权限不足处理器（已认证但无权限时触发 403）
-     */
-    private final AccessDeniedHandler accessDeniedHandler;
-
-    /**
-     * JWT 解析过滤器（每个请求执行一次），参数：HttpServletRequest / HttpServletResponse / FilterChain（由 OncePerRequestFilter 内部控制）
-     */
-    private final OncePerRequestFilter jwtAuthenticationFilter;
-
-
-    // ========== 3. 核心安全过滤链（请求进入后端的执行顺序）==========
+    // ========== 核心安全过滤链（请求进入后端的执行顺序）==========
 
     /**
      * Spring Security 过滤链配置
@@ -132,84 +76,83 @@ public class SecurityConfig {
      */
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
-        http
-                // ① JWT 过滤器最先执行（在账号密码登录过滤器之前解析身份）
-                .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class)
 
-                // ② 关闭 CSRF（前后端分离必须关闭）
-                .csrf(AbstractHttpConfigurer::disable)
+        // 1. 先添加 JWT 解析认证过滤器（每个请求执行一次）
+        http.addFilterBefore(authenticationFilter, UsernamePasswordAuthenticationFilter.class);
 
-                // ③ 启用跨域配置（使用上面定义的 CORS Bean）
-                .cors(Customizer.withDefaults())
+        // 2. 关闭 CSRF（前后端分离必须关闭）
+        http.csrf(AbstractHttpConfigurer::disable);
 
-                // ④ 设为无状态，不创建/使用 Session
-                .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+        // 3. 启用 CORS 跨域配置（会自动使用你定义的 corsConfigurationSource Bean）
+        http.cors(Customizer.withDefaults());
 
-                // ⑤ 统一异常处理入口
-                .exceptionHandling(e -> e
-                        .authenticationEntryPoint(authenticationEntryPoint) // 401
-                        .accessDeniedHandler(accessDeniedHandler)           // 403
-                )
+        // 4. 设为无状态，不创建或使用 Session
+        http.sessionManagement(session ->
+                session.sessionCreationPolicy(SessionCreationPolicy.STATELESS)
+        );
 
-                // ⑥ 接口权限规则（按路径匹配）
-                .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/auth/login").permitAll()    // 登录放行
-                        .requestMatchers("/auth/register").permitAll() // 注册放行
-                        .requestMatchers("/auth/captcha").permitAll()  // 验证码放行
-                        .anyRequest().authenticated()                  // 其他接口必须登录
-                )
+        // 5. 统一异常处理（401/403 都交给同一个 handler 处理）
+        http.exceptionHandling(handler -> {
+            handler.authenticationEntryPoint(exceptionHandler);
+            handler.accessDeniedHandler(exceptionHandler);
+        });
 
-                // ⑦ 账号密码登录配置（不使用默认登录页，只接受接口 POST 方式）
-                .formLogin(form -> form
-                        .loginProcessingUrl("/auth/login")      // 处理登录的接口
-                        .successHandler(this::loginSuccessHandler) // 登录成功回调
-                        .failureHandler(this::loginFailureHandler) // 登录失败回调
-                        .permitAll()
-                );
+        // 6. 配置接口访问权限规则
+        http.authorizeHttpRequests(auth -> {
+            auth.requestMatchers("/auth/login").permitAll();
+            auth.requestMatchers("/auth/register").permitAll();
+            auth.requestMatchers("/auth/captcha").permitAll();
+            auth.anyRequest().authenticated();
+        });
+
+        // 7. 账号密码登录接口配置（不使用默认页面，只用 POST 接口）
+        http.formLogin(login -> {
+            login.loginProcessingUrl("/auth/login");
+            // 登陆成功回调
+            login.successHandler(responseHandler.loginSuccessHandler());
+            // 登陆失败回调
+            login.failureHandler(responseHandler.loginFailureHandler());
+            login.permitAll();
+        });
 
         return http.build();
     }
 
-
-    // ========== 4. 登录回调处理（在认证流程最后触发）==========
+    // ========== 启动期基础 Bean ==========
 
     /**
-     * 登录成功回调处理（生成 JWT 并返回）
-     * 参数：
-     *
-     * @param request        本次 HTTP 请求对象
-     * @param response       HTTP 响应对象（用于写回 JSON）
-     * @param authentication 认证成功后的用户信息（含 username / authorities）
+     * 认证管理器（用于登录接口触发用户认证）
      */
-    private void loginSuccessHandler(HttpServletRequest request,
-                                     HttpServletResponse response,
-                                     Authentication authentication) throws IOException {
-        response.setContentType("application/json;charset=UTF-8");
-        String username = authentication.getName();
-
-        // 生成 JWT Token
-        String token = JWT.create()
-                .setPayload("username", username)
-                // 1小时过期
-                .setExpiresAt(new Date(System.currentTimeMillis() + 3600_000))
-                .setKey(SystemConstant.JWT_SIGN_KEY.getBytes(StandardCharsets.UTF_8))
-                .sign();
-
-        response.getWriter().write("{\"code\":0,\"token\":\"" + token + "\"}");
+    @Bean
+    public AuthenticationManager authenticationManager(AuthenticationConfiguration configuration) throws Exception {
+        return configuration.getAuthenticationManager();
     }
 
     /**
-     * 登录失败回调处理（返回统一错误 JSON）
-     * 参数：
-     *
-     * @param request   本次 HTTP 请求对象
-     * @param response  HTTP 响应对象（用于写回 JSON）
-     * @param exception 认证失败的异常信息（如密码错误、账号不存在）
+     * CORS 跨域配置源（允许 Vue 前端访问后端接口）
      */
-    private void loginFailureHandler(HttpServletRequest request,
-                                     HttpServletResponse response,
-                                     AuthenticationException exception) throws IOException {
-        response.setContentType("application/json;charset=UTF-8");
-        response.getWriter().write("{\"code\":401,\"msg\":\"用户名或密码错误\"}");
+    @Bean
+    public CorsConfigurationSource corsConfigurationSource() {
+        CorsConfiguration config = new CorsConfiguration();
+        // 允许来源：localhost:5173
+        config.addAllowedOrigin("http://localhost:5173");
+        // 允许 Cookie：true
+        config.setAllowCredentials(true);
+        // 允许 Header/Method：*
+        config.addAllowedHeader("*");
+        config.addAllowedMethod("*");
+
+        UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
+        source.registerCorsConfiguration("/**", config);
+        return source;
+    }
+
+    /**
+     * 密码加密器
+     */
+    @Bean
+    public PasswordEncoder passwordEncoder() {
+        // BCrypt 自带随机盐
+        return new BCryptPasswordEncoder();
     }
 }
