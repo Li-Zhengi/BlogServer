@@ -24,6 +24,12 @@ import java.util.Date;
 public class CustomAuthResponseHandler {
 
     /**
+     * 注入自定义用户认证服务（实现了 Spring Security 的 UserDetailsService）
+     * 用于根据用户名查询用户信息、密码、权限等
+     */
+    private final SecurityUserService service;
+
+    /**
      * 登录成功回调处理器
      *
      * @return AuthenticationSuccessHandler（Lambda 实现）
@@ -33,8 +39,12 @@ public class CustomAuthResponseHandler {
             response.setContentType("application/json;charset=UTF-8");
             String username = authentication.getName();
 
+            // 根据用户名查询用户 ID（Token 验证使用 ID 验证）
+            Long userId = service.getUserIdByUsername(username);
+
             String token = JWT.create()
                     .setPayload("username", username)
+                    .setPayload("userId", userId)
                     .setExpiresAt(new Date(System.currentTimeMillis() + 3600_000))
                     .setKey(SystemConstant.JWT_SIGN_KEY.getBytes(StandardCharsets.UTF_8))
                     .sign();

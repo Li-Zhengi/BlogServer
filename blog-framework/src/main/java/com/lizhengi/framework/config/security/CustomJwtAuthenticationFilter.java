@@ -55,11 +55,11 @@ public class CustomJwtAuthenticationFilter extends OncePerRequestFilter {
                 // 4. 解析 JWT（第三方 JWT 库解析）
                 JWT jwt = JWT.of(token);
 
-                // 5. 从 JWT payload 中提取 userName 字段
-                String username = jwt.getPayload("userName").toString();
+                // 5. 从 JWT payload 中提取 userId 字段
+                Long id = Long.valueOf(jwt.getPayload("userId").toString());
 
-                // 6. 通过用户名查询用户详情（包括权限、密码、状态等）
-                UserDetails userDetails = service.loadUserByUsername(username);
+                // 6. 通过 userId 查询用户详情（包括权限、密码、状态等）
+                UserDetails userDetails = service.loadUserByUserId(id);
 
                 // 7. 构建认证对象（Authentication）：
                 UsernamePasswordAuthenticationToken authToken = new UsernamePasswordAuthenticationToken(

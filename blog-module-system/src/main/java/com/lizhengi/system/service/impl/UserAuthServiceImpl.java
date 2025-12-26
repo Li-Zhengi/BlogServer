@@ -5,7 +5,6 @@ import com.alibaba.fastjson2.JSON;
 import com.lizhengi.framework.config.security.SecurityUserService;
 import com.lizhengi.system.manager.UserManager;
 import com.lizhengi.system.pojo.bo.UserBO;
-import com.lizhengi.system.pojo.entity.UserEntity;
 import com.lizhengi.system.service.UserAuthService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -58,6 +57,38 @@ public class UserAuthServiceImpl implements UserAuthService, SecurityUserService
                 .build();
 
         log.info("UserAuthServiceImpl#loadUserByUsername end, userDetails:{}", userDetails);
+        return userDetails;
+    }
+
+    @Override
+    public UserDetails loadUserByUserId(Long userId) throws UsernameNotFoundException {
+
+        log.info("UserAuthServiceImpl#loadUserByUserId start, userId:{}", userId);
+
+        // 从数据库或缓存查询用户
+        UserBO userBO = userManager.getBoById(userId);
+        if (userBO == null) {
+            throw new UsernameNotFoundException("用户不存在: " + userId);
+        }
+
+        log.info("UserAuthServiceImpl#loadUserByUserId -> userManager#getBoByUsername userBO:{}", JSON.toJSONString(userBO));
+
+        // 构建权限列表
+        // 数据库中 role 字段存储的是单个角色，例如 "ADMIN" 或 "USER"
+        GrantedAuthority authority = new SimpleGrantedAuthority(userBO.getRole());
+
+        // Spring Security 内部 User 对象
+        UserDetails userDetails = User.builder()
+                .username(userBO.getUsername())
+                .password(userBO.getPassword())
+                .authorities(Collections.singletonList(authority))
+                .accountExpired(false)
+                .accountLocked(false)
+                .credentialsExpired(false)
+                .disabled(false)
+                .build();
+
+        log.info("UserAuthServiceImpl#loadUserByUserId end, userDetails:{}", userDetails);
         return userDetails;
     }
 
