@@ -4,7 +4,6 @@ package com.lizhengi.framework.config.security;
 import cn.hutool.jwt.JWT;
 import com.lizhengi.framework.common.constant.SystemConstant;
 import lombok.RequiredArgsConstructor;
-import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.authentication.AuthenticationFailureHandler;
 import org.springframework.security.web.authentication.AuthenticationSuccessHandler;
 import org.springframework.stereotype.Component;

@@ -1,8 +1,5 @@
-package com.lizhengi.framework.config;
+package com.lizhengi.framework.config.security;
 
-import com.lizhengi.framework.config.security.CustomAuthResponseHandler;
-import com.lizhengi.framework.config.security.CustomJwtAuthenticationFilter;
-import com.lizhengi.framework.config.security.CustomSecurityExceptionHandler;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;

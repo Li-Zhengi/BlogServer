@@ -1,4 +1,4 @@
-package com.lizhengi.framework.config;
+package com.lizhengi.framework.config.mybatis.plus;
 
 import com.baomidou.mybatisplus.core.handlers.MetaObjectHandler;
 import org.apache.ibatis.reflection.MetaObject;
