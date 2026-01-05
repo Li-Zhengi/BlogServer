@@ -14,7 +14,7 @@
 
     <groupId>com.lizhengi</groupId>
     <artifactId>BlogServer</artifactId>
-    <version>1.0.5</version>
+    <version>1.0.6-SNAPSHOT</version>
     <packaging>pom</packaging>
 
     <name>BlogServer</name>
@@ -29,6 +29,7 @@
         <module>blog-module-file</module>
         <module>blog-server-admin</module>
         <module>blog-server-client</module>
+        <module>blog-server</module>
     </modules>
 
     <properties>

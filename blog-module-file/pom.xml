@@ -6,7 +6,7 @@
     <parent>
         <groupId>com.lizhengi</groupId>
         <artifactId>BlogServer</artifactId>
-        <version>1.0.5</version>
+        <version>1.0.6-SNAPSHOT</version>
     </parent>
 
     <artifactId>blog-module-file</artifactId>
@@ -15,12 +15,12 @@
         <dependency>
             <groupId>com.lizhengi</groupId>
             <artifactId>blog-common</artifactId>
-            <version>1.0.5</version>
+            <version>1.0.6-SNAPSHOT</version>
         </dependency>
         <dependency>
             <groupId>com.lizhengi</groupId>
             <artifactId>blog-framework</artifactId>
-            <version>1.0.5</version>
+            <version>1.0.6-SNAPSHOT</version>
         </dependency>
     </dependencies>
 
